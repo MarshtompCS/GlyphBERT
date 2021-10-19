@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="zhaoyu@10.249.144.85:22" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="wch@10.249.43.248:22">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="wch@10.249.43.248:22 (2)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zhaoyu@10.249.144.85:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/inspurfs/user-fs/zhaoyu/GlyphBERT" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zhaoyu@10.249.144.85:22 (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/inspurfs/user-fs/zhaoyu/GlyphBERT" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zy@10.249.45.41:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/raid/zy/GlyphBERT" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zy@10.249.45.41:22 (1)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zy@10.249.47.217:22">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
