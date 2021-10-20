@@ -73,7 +73,7 @@ class GlyphBERT(nn.Module, ABC):
 
         if self.cnn_and_embed_mat:
             normal_embedding = self.embedding_matrix(input_ids)
-            input_embeds = torch.cat((input_embeds + normal_embedding))
+            input_embeds = self.fusion_linear(torch.cat((input_embeds, normal_embedding), dim=-1))
 
         outputs = self.bert(
             input_ids=None,

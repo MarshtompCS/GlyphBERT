@@ -16,7 +16,7 @@ if __name__ == '__main__':
     train_dataset = GlyphDataset(config)
 
     model = GlyphBERT(config=config, glyph_embedding=AddBertResPos3)
-    model = load_existing_bert(model)
+    # model = load_existing_bert(model)
     if config.get("state_dict", None) is not None:
         print("Load state dict {}".format(config['state_dict']))
         model = model.to('cpu')

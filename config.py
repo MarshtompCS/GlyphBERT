@@ -15,7 +15,7 @@ def get_path(p, is_data=False):
 
 config = {
     # env config
-    "device": "2,3,6,7",  # "4,5,6,7"
+    "device": "2,4,5,6",  # "4,5,6,7"
     "parallel": "data_parallel",  # "data_parallel" "DDP" None
     "local_rank": None,
 
