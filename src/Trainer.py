@@ -63,6 +63,8 @@ class Trainer:
             self.model = nn.DataParallel(self.model)
 
         self.save_name_list = []
+        if not os.path.exists("./save"):
+            os.mkdir("save")
 
         if self.is_local_0:
             shutil.rmtree('./running_log/tensorboard')
@@ -117,7 +119,7 @@ class Trainer:
                 loss_cache = []
                 cache_start_time = time.perf_counter()
 
-            if (self.optimize_step + 1) % 2000 == 0:
+            if (self.optimize_step + 1) % 5 == 0:
                 print("rank {} is alive, optimize_step {}".format(self.local_rank, self.optimize_step))
                 self.save_state_dict("time[{}]-step[{}].pt".format(
                     time.strftime("%m-%d-%H-%M"), self.optimize_step + 1))

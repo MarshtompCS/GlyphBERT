@@ -72,7 +72,8 @@ def main():
         log.write_log("load state dict {}".format(config['state_dict']))
         print("Load state dict {}".format(config['state_dict']))
         model = model.to('cpu')
-        model.load_state_dict(torch.load(config['state_dict'], map_location='cpu'))
+        checkpoint = torch.load(config['state_dict'],map_location='cpu')
+        model.load_state_dict(checkpoint['model'])
 
     log.write_log("read training dataset")
     train_dataset = GlyphDataset(config)

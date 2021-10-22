@@ -15,13 +15,13 @@ def get_path(p, is_data=False):
 
 config = {
     # env config
-    "device": "2,4,5,6",  # "4,5,6,7"
-    "parallel": "data_parallel",  # "data_parallel" "DDP" None
+    "device": "0,7",  # "4,5,6,7"
+    "parallel": None,  # "data_parallel" "DDP" None
     "local_rank": None,
 
     # training config
     "batch_per_card": 16,
-    "batch_expand_times": 16,
+    "batch_expand_times": 2,
     "epoch": 20,
     "warm_up": 10000,
     "lr": 1e-4,
@@ -34,13 +34,13 @@ config = {
     "use_res2bert": True,
     "cnn_and_embed_mat": True,
     "add_nsp_task": True,
-    "state_dict": None,
+    "state_dict": "./save/time[10-21-22-35]-step[8000].pt",
 
     # path config
     "bmp_path": get_path("data/bmp", is_data=True),
     "vocab_path": get_path("data/vocab_bmp.txt", is_data=True),
     "bert_config_path": get_path("pretrained_model/config.json"),
-    "pretrained_data_name": "dupe4wiki",  # one_wiki DEBUG overflow dupe4wiki
+    "pretrained_data_name": "DEBUG",  # one_wiki DEBUG overflow dupe4wiki
 
     # create dataset config
     # "sentence_path": None,  # sentence_path == None: do not create

@@ -12,6 +12,7 @@ if __name__ == '__main__':
     world_size = len(list(config['device'].split(',')))
     local_rank = config['local_rank']
     config['world_size'] = world_size
+    torch.cuda.set_device(local_rank)
 
     train_dataset = GlyphDataset(config)
 
@@ -20,8 +21,9 @@ if __name__ == '__main__':
     if config.get("state_dict", None) is not None:
         print("Load state dict {}".format(config['state_dict']))
         model = model.to('cpu')
-        model.load_state_dict(torch.load(config['state_dict'], map_location='cpu'))
-    torch.cuda.set_device(local_rank)
+        checkpoint = torch.load(config['state_dict'], map_location='cpu')
+        model.load_state_dict(checkpoint['model'])
+
     model = model.to('cuda')
     distributed.init_process_group(backend="nccl", rank=local_rank, world_size=world_size)
     model = DistributedDataParallel(
