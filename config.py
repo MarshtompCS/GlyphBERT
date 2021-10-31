@@ -141,8 +141,23 @@ else:
         config['data_path'][idx] = get_path(config['data_path'][idx], is_data=True)
 
 config['vocab_size'] = vocab_size
-
 os.environ["CUDA_VISIBLE_DEVICES"] = config['device']
+
+# recover the previous training state
+if config.get('state_dict'):
+    import torch
+
+    state_dict = torch.load(config['state_dict'], map_location='cpu')
+    training_state = state_dict['training_state']
+    prev_config = state_dict['config']
+    config['lr'] = training_state['last_lr']
+    if type(prev_config['warm_up']) is float:
+        warm_up_step = training_state['total_optimize_step'] * prev_config['warm_up']
+    else:
+        warm_up_step = config['warm_up']
+    assert training_state['optimize_step'] >= warm_up_step
+    config['warm_up'] = 0
+    config['rest_optimize_step'] = training_state['total_optimize_step'] - training_state['optimize_step']
 
 print("")
 print("-" * 12 + "Config" + "-" * 12)

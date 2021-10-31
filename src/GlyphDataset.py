@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 from torchvision import transforms
 from itertools import chain
 from tqdm import tqdm
-
+from transformers.models.albert import AlbertForQuestionAnswering
 
 class GlyphDataset(data.Dataset):
     def __init__(self, config, loaded_data=None):

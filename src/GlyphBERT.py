@@ -38,20 +38,20 @@ class GlyphBERT(nn.Module, ABC):
         self.mlm = BertOnlyMLMHead(self.bert_config)
         self.loss_fct = nn.CrossEntropyLoss()
 
-    def forward(self, input_ids=None, token_type_ids=None, labels=None, image_input=None,
-                next_sentence_label=None, attention_mask=None, unique_ids=None):
+    def glyph_bert_sequence_outputs(self, input_ids=None, token_type_ids=None, image_input=None,
+                                    attention_mask=None, unique_ids=None):
         if unique_ids is not None:
             unique_embeds, first_res_embeds, second_res_embeds = self.cnn_embedding(
                 input_ids=unique_ids.unsqueeze(dim=0),
                 image_input=image_input,
             )
             unique_embeds = unique_embeds.squeeze(dim=0)
-            glyph_map = torch.zeros((self.vocab_size, self.hidden_size)).to(labels.device)
+            glyph_map = torch.zeros((self.vocab_size, self.hidden_size)).to(input_ids.device)
             if self.use_res2bert:
                 first_res_embeds = first_res_embeds.squeeze(dim=0)
                 second_res_embeds = second_res_embeds.squeeze(dim=0)
-                first_res_map = torch.zeros((self.vocab_size, self.hidden_size)).to(labels.device)
-                second_res_map = torch.zeros((self.vocab_size, self.hidden_size)).to(labels.device)
+                first_res_map = torch.zeros((self.vocab_size, self.hidden_size)).to(input_ids.device)
+                second_res_map = torch.zeros((self.vocab_size, self.hidden_size)).to(input_ids.device)
             else:
                 first_res_map, second_res_map = None, None
             for idx, i in enumerate(unique_ids.view(-1).tolist()):
@@ -87,6 +87,16 @@ class GlyphBERT(nn.Module, ABC):
         )
         sequence_output = outputs[0]
 
+        return sequence_output
+
+    def forward(self, input_ids=None, token_type_ids=None, labels=None, image_input=None,
+                next_sentence_label=None, attention_mask=None, unique_ids=None):
+
+        sequence_output = self.glyph_bert_sequence_outputs(
+            input_ids=input_ids, token_type_ids=token_type_ids, image_input=image_input,
+            attention_mask=attention_mask, unique_ids=unique_ids
+        )
+
         mlm_logits = self.mlm(sequence_output)
         mlm_loss = self.loss_fct(mlm_logits.view(-1, self.bert_config.vocab_size), labels.view(-1))
 
@@ -101,7 +111,7 @@ class GlyphBERT(nn.Module, ABC):
             "loss": mlm_loss if nsp_loss is None else mlm_loss + nsp_loss,
             "mlm_loss": mlm_loss,
             "nsp_loss": nsp_loss,
-            "embeddings": input_embeds,
+            # "embeddings": input_embeds,
             # "input_ids":input_ids,
         }
 

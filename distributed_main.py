@@ -21,8 +21,7 @@ if __name__ == '__main__':
     if config.get("state_dict", None) is not None:
         print("Load state dict {}".format(config['state_dict']))
         model = model.to('cpu')
-        checkpoint = torch.load(config['state_dict'], map_location='cpu')
-        model.load_state_dict(checkpoint['model'])
+        model.load_state_dict(torch.load(config['state_dict'], map_location='cpu')['model'])
 
     model = model.to('cuda')
     distributed.init_process_group(backend="nccl", rank=local_rank, world_size=world_size)

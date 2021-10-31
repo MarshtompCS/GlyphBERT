@@ -29,11 +29,23 @@ class Trainer:
         self.local_rank = config['local_rank']
         self.is_local_0 = self.local_rank is None or self.local_rank == 0
         print("Trainer rank {}, is_local_0:{}".format(self.local_rank, self.is_local_0))
-        self.optimizer = AdamW(self.model.parameters(), lr=self.lr, weight_decay=0.01,
+
+        param_optimizer = list(model.named_parameters())
+        no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+        optimizer_grouped_parameters = [
+            {'params': [p for n, p in param_optimizer
+                        if not any(nd in n for nd in no_decay)], 'weight_decay': config['weight_decay']},
+            {'params': [p for n, p in param_optimizer
+                        if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+        ]
+        self.optimizer = AdamW(optimizer_grouped_parameters, lr=self.lr, weight_decay=0.01,
                                correct_bias=False, eps=1e-6, betas=(0.9, 0.98))
 
-        one_epoch_backward_step_num = math.ceil(len(train_dataset) / self.batch_size)
-        total_optimize_step = one_epoch_backward_step_num * self.epoch // self.batch_expand_times
+        if config.get("rest_optimize_step"):
+            total_optimize_step = config['rest_optimize_step']
+        else:
+            one_epoch_backward_step_num = math.ceil(len(train_dataset) / self.batch_size)
+            total_optimize_step = one_epoch_backward_step_num * self.epoch // self.batch_expand_times
 
         # BERT: warmup 10000
         warm_up_step = config['warm_up'] if config['warm_up'] >= 1 else int(total_optimize_step * config['warm_up'])
@@ -41,7 +53,7 @@ class Trainer:
         self.schedule = get_linear_schedule_with_warmup(
             self.optimizer,
             num_training_steps=total_optimize_step,
-            num_warmup_steps=warm_up_step
+            num_warmup_steps=warm_up_step,
         )
         self.optimize_step = 0
         self.backward_step = 0
@@ -67,7 +79,8 @@ class Trainer:
             os.mkdir("save")
 
         if self.is_local_0:
-            shutil.rmtree('./running_log/tensorboard')
+            if config['state_dict'] is None:
+                shutil.rmtree('./running_log/tensorboard')
             self.board = SummaryWriter('./running_log/tensorboard')
         else:
             self.board = None
@@ -119,10 +132,10 @@ class Trainer:
                 loss_cache = []
                 cache_start_time = time.perf_counter()
 
-            if (self.optimize_step + 1) % 5 == 0:
-                print("rank {} is alive, optimize_step {}".format(self.local_rank, self.optimize_step))
-                self.save_state_dict("time[{}]-step[{}].pt".format(
-                    time.strftime("%m-%d-%H-%M"), self.optimize_step + 1))
+                if (self.optimize_step + 1) % 2000 == 0:
+                    print("rank {} is alive, optimize_step {}".format(self.local_rank, self.optimize_step))
+                    self.save_state_dict("time[{}]-step[{}].pt".format(
+                        time.strftime("%m-%d-%H-%M"), self.optimize_step + 1))
 
         avg_loss = loss_sum / step_num
 
