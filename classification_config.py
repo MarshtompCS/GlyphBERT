@@ -14,16 +14,16 @@ def get_path(p, is_data=False):
 
 config = {
 
-    "device": "7",
-    "epoch": 15,
+    "device": "0",
+    "epoch": 10,
     "batch_size": 32,
     "batch_expand_times": 1,
     "warm_up": 0.1,
     "weight_decay": 0,
     "steps_eval": 0.2,
-    "start_eval_epoch": 1,
+    "start_eval_epoch": 3,
     "exp_times": 3,
-    "lr": 1e-5,
+    "lr": 2e-5,
     "bmp_path": get_path("data/bmp", is_data=True),
     "vocab_path": get_path("data/vocab_bmp.txt", is_data=True),
     "bert_config_path": get_path("pretrained_model/config.json"),
@@ -33,6 +33,7 @@ config = {
     "parallel": None,
     "vocab_size": 18612,
     "save_root": "/mnt/inspurfs/user-fs/zhaoyu/GlyphBERT/downstream/save",
+    "state_dict": None,  # state_dict is not pretrained_model_path
 }
 
 parser = argparse.ArgumentParser()
@@ -87,6 +88,27 @@ elif config['dataset_name'] == "onlinesenti_cls":
         "dev_data_path": get_path("./data/onlinesenti_cls_dev.pkl", is_data=True),
         "test_data_path": get_path("./data/onlinesenti_cls_test.pkl", is_data=True),
     })
+elif config['dataset_name'] == "medical_cls":
+    config.update({
+        "train_data_path": get_path("./data/medical_cls_train.pkl", is_data=True),
+        "dev_data_path": get_path("./data/medical_cls_dev.pkl", is_data=True),
+        "test_data_path": get_path("./data/medical_cls_test.pkl", is_data=True),
+    })
 
 print(config)
 print("")
+
+# ./save/AddBertResPos3-epoch2-loss1.03873.pt
+
+""" 参数记录
+
+onlinesenti:
+--lr=3e-5 --epoch=10 --steps_eval=0.1 --start_eval_epoch=2 --batch_size=8 --warm_up=0.2
+
+hotel:
+--lr=2e-5 --epoch=10 --steps_eval=0.2 --start_eval_epoch=3 --batch_size=32 --warm_up=0.1
+
+chnsenti:
+--lr=2e-5 --epoch=10 --steps_eval=0.2 --start_eval_epoch=3 --batch_size=32 --warm_up=0.1
+
+"""

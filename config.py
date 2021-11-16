@@ -15,16 +15,17 @@ def get_path(p, is_data=False):
 
 config = {
     # env config
-    "device": "0,7",  # "4,5,6,7"
+    "device": "4,5,6,7",  # "4,5,6,7"
     "parallel": None,  # "data_parallel" "DDP" None
     "local_rank": None,
 
     # training config
     "batch_per_card": 16,
-    "batch_expand_times": 2,
+    "batch_expand_times": 16,
     "epoch": 20,
     "warm_up": 10000,
     "lr": 1e-4,
+    "weight_decay": 0.01,
     "batch": None,  # batch will be calculate based on batch_per_card and batch_expand_times
     "glyph_map": True,  # False True
     "dataloader_workers": 4,
@@ -34,20 +35,14 @@ config = {
     "use_res2bert": True,
     "cnn_and_embed_mat": True,
     "add_nsp_task": True,
-    "state_dict": "./save/time[10-21-22-35]-step[8000].pt",
+    "state_dict": "./save/time[11-06-15-47]-step[16000].pt",
+    "board_path": "WikiFromEpoch4",
 
     # path config
     "bmp_path": get_path("data/bmp", is_data=True),
     "vocab_path": get_path("data/vocab_bmp.txt", is_data=True),
     "bert_config_path": get_path("pretrained_model/config.json"),
-    "pretrained_data_name": "DEBUG",  # one_wiki DEBUG overflow dupe4wiki
-
-    # create dataset config
-    # "sentence_path": None,  # sentence_path == None: do not create
-    # "dupe_num": 1,
-    # "short_seq_prob": 0.1,
-    # "mask_prob": 0.15,
-    # "max_pred_num_per_seq": 20,
+    "pretrained_data_name": "dupe4wiki",  # one_wiki DEBUG overflow dupe4wiki
 }
 
 parser = argparse.ArgumentParser()
@@ -116,11 +111,13 @@ if config.get('sentence_path') is None:
     elif config['pretrained_data_name'] == '300w':
         config['data_path'] = ["./data/4-18-300w/{}.pkl".format(i) for i in range(3)]
     elif config['pretrained_data_name'] == "dupe4wiki":
-        # all_data_path_list = [
-        #     "./data/dupe4wiki-10-12-unique/{}.pkl".format(i) for i in range(13)
-        # ]
         all_data_path_list = [
             "./data/dupe4wiki-10-13/{}.pkl".format(i) for i in range(13)
+        ]
+        config['data_path'] = all_data_path_list
+    elif config['pretrained_data_name'] == "dupe4wiki16":
+        all_data_path_list = [
+            "./data/for16gpus/{}.pkl".format(i) for i in range(16)
         ]
         config['data_path'] = all_data_path_list
     elif config['pretrained_data_name'] == "one_wiki":
@@ -158,6 +155,7 @@ if config.get('state_dict'):
     assert training_state['optimize_step'] >= warm_up_step
     config['warm_up'] = 0
     config['rest_optimize_step'] = training_state['total_optimize_step'] - training_state['optimize_step']
+    config['training_state'] = training_state
 
 print("")
 print("-" * 12 + "Config" + "-" * 12)

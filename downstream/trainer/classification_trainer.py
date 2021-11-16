@@ -58,7 +58,7 @@ class ClassifierTrainer:
 
         self.save_name_list = []
 
-        self.total_steps = total_steps
+        self.total_steps = total_step
         self.steps_eval = int(len(train_dataset) / (self.batch_size * self.batch_expand_times) * config['steps_eval'])
         self.start_eval_epoch = config['start_eval_epoch']
         self.current_steps = 0

@@ -66,6 +66,14 @@ def load_existing_bert(model):
 def main():
     log.write_log("build model")
     model = GlyphBERT(config=config, glyph_embedding=AddBertResPos3)
+
+
+    params_num = 0
+    for n, p in model.named_parameters():
+        if "cnn_embedding" in n:
+            params_num += p.numel()
+    print(params_num)
+
     # model = load_existing_bert(model)
 
     if config.get("state_dict", None) is not None:

@@ -47,18 +47,19 @@ class Trainer:
             one_epoch_backward_step_num = math.ceil(len(train_dataset) / self.batch_size)
             total_optimize_step = one_epoch_backward_step_num * self.epoch // self.batch_expand_times
 
+        self.optimize_step = 0
+        self.backward_step = 0
+        self.total_optimize_step = total_optimize_step
+        self.last_epoch_avg_loss = None
+
         # BERT: warmup 10000
         warm_up_step = config['warm_up'] if config['warm_up'] >= 1 else int(total_optimize_step * config['warm_up'])
         print("warm-up/total-step: {}/{}".format(warm_up_step, total_optimize_step))
         self.schedule = get_linear_schedule_with_warmup(
             self.optimizer,
-            num_training_steps=total_optimize_step,
+            num_training_steps=self.total_optimize_step,
             num_warmup_steps=warm_up_step,
         )
-        self.optimize_step = 0
-        self.backward_step = 0
-        self.total_optimize_step = total_optimize_step
-        self.last_epoch_avg_loss = None
 
         self.data_sampler = None
         self.train_dataloader = None
@@ -79,9 +80,7 @@ class Trainer:
             os.mkdir("save")
 
         if self.is_local_0:
-            if config['state_dict'] is None:
-                shutil.rmtree('./running_log/tensorboard')
-            self.board = SummaryWriter('./running_log/tensorboard')
+            self.board = SummaryWriter('./running_log/{}'.format(config['board_path']))
         else:
             self.board = None
 
@@ -109,7 +108,7 @@ class Trainer:
 
             if self.config['parallel'] == "data_parallel":
                 loss = loss.mean()
-            bar_description = "EPOCH[{}] LOSS[{:.5f}] ".format(epoch, loss.item())
+            bar_description = "EPOCH[{}] LOSS[{:.5f}] OPTIMIZE[{}]".format(epoch, loss.item(), self.optimize_step)
 
             if self.is_local_0:
                 iterator_bar.set_description(bar_description)
@@ -132,7 +131,7 @@ class Trainer:
                 loss_cache = []
                 cache_start_time = time.perf_counter()
 
-                if (self.optimize_step + 1) % 2000 == 0:
+                if (self.optimize_step + 1) % 4000 == 0:
                     print("rank {} is alive, optimize_step {}".format(self.local_rank, self.optimize_step))
                     self.save_state_dict("time[{}]-step[{}].pt".format(
                         time.strftime("%m-%d-%H-%M"), self.optimize_step + 1))
@@ -144,7 +143,7 @@ class Trainer:
     def train(self):
         min_loss = float('inf')
         print("Start Training")
-        self.save_state_dict(filename='init_save[{}]'.format(time.strftime("%m-%d-%H-%M")), add_to_save_list=False)
+        # self.save_state_dict(filename='init_save[{}]'.format(time.strftime("%m-%d-%H-%M")), add_to_save_list=False)
         for epoch in range(1, self.epoch + 1):
             avg_loss = self.train_epoch(epoch)
             self.last_epoch_avg_loss = avg_loss
@@ -165,13 +164,11 @@ class Trainer:
         if self.config['parallel'] in ['data_parallel', 'DDP']:
             torch.save({"config": self.config,
                         "training_state": self.get_training_state(),
-                        "model": self.model.module.state_dict()},
-                       save_path)
+                        "model": self.model.module.state_dict()}, save_path)
         else:
             torch.save({"config": self.config,
                         "training_state": self.get_training_state(),
-                        "model": self.model.state_dict()},
-                       save_path)
+                        "model": self.model.state_dict()}, save_path)
         if not add_to_save_list:
             return
 

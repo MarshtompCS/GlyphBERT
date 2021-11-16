@@ -10,13 +10,11 @@ from src.GlyphCNN import AddBertResPos3
 
 def get_empty_model(exp_time=1):
     pretrained_model = GlyphBERT(config=config, glyph_embedding=AddBertResPos3)
-
-    pretrained_model.load_state_dict(torch.load(config['pretrained_model_path'], map_location='cpu')['model'])
-
+    checkpoint = torch.load(config['pretrained_model_path'], map_location='cpu')
+    pretrained_model.load_state_dict(checkpoint['model'])
     new_model = ClassifierBERT(pretrained_model, pretrained_model.cnn_embedding)
     if config.get("state_dict", None) is not None and exp_time == 1:
         new_model.load_state_dict(torch.load(config['state_dict'], map_location='cpu')['model'])
-
     return new_model
 
 
